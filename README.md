@@ -22,12 +22,18 @@ Codespace 側で `claude` 起動時に、これらがグローバル設定とし
 
 ### 配置しないもの(意図的除外)
 
-| 除外対象 | 理由 |
+以下はローカル `~/.claude/` には存在するが、Codespace へは **意図的に持ち込まない** もの。将来「これも欲しい」となった時に判断を再訪できるように、除外理由のメモを残しておく。
+
+| 除外対象 | 除外理由 |
 |---|---|
-| `~/.claude/settings.json` | プロジェクト側 `.claude/settings.json` とスコープが被る |
-| `~/.claude/.credentials.json` | `CLAUDE_CODE_OAUTH_TOKEN` env var 認証と二重化を避ける |
-| `~/.claude/skills/` | `new-proto` は Codespace 内で使う意味が薄く、他スキルも今はスコープ外 |
-| `~/.claude.json` | テンプレ `postCreateCommand` が onboarding skip 用に管理済み |
+| `~/.claude/settings.json` | テンプレの `.claude/settings.json` とスコープが被るリスクを避ける。グローバル settings(permissions / hooks / env)を Codespace 内で再現する価値が薄く、プロジェクト単位の settings に任せた方が競合が起きにくい |
+| `~/.claude/hooks/` | `approve-skill-scripts.sh` は skills を持ち込まないため不要、`open-plan-vscode.sh` は `code -r` によるローカル VS Code 起動前提で Codespace では機能しない |
+| `~/.claude/skills/` | `new-proto` は「Codespace を作る」スキルなので Codespace の中で動かす意味がない(中から Codespace を作らない)。`game-spec` / `refine` も今回のスコープ外 |
+| `~/.claude/.credentials.json` | `CLAUDE_CODE_OAUTH_TOKEN` env var 認証と二重化する、期限切れ時のリカバリが面倒、dotfiles repo に実トークンが混入する危険 |
+| `~/.claude.json`(`$HOME` 直下のドットファイル) | テンプレ `postCreateCommand` が onboarding skip 用に `{"hasCompletedOnboarding":true}` を作成して管理済み。dotfiles からは一切触らない |
+| MCP plugins 設定一式 | 個別トークン(GitHub PAT 等)必須のものが多く、運用負荷が高い。今回のスコープ外 |
+
+> **追加するときの判断基準**: 「Codespace 内で編集/実行する Claude Code に価値を与えるか」「ローカル専用の前提(パス・外部 CLI・個人資格情報)を含まないか」の 2 点で再評価する。持ち込むと判断したら、このテーブルから該当行を削って install.sh と sync-from-local.ps1 に追記する。
 
 ## 3. 初回セットアップ(1 回だけ)
 
